@@ -1,42 +1,66 @@
-from playsound import playsound
+from playsound3 import playsound
 from pynput import keyboard
 import time
 import json
-import os
-import pathlib
+from pathlib import Path
 
-with open("sounds.json", "") as file:
-  custom_sounds=json.load(file)
-  
-normal_keys = 'sounds/light.wav'
-special_keys = 'sounds/strong.wav'
-custom_key = ''
+BASE_DIR = Path(__file__).parent
+SOUNDS_FILE = BASE_DIR / "sounds.json"
+VALID_EXTENSIONS = {".wav", ".mp3"}
+NORMAL_KEYS = BASE_DIR / 'sounds/light.wav'
+SPECIAL_KEYS = BASE_DIR / 'sounds/strong.wav'
 
-def validate_path():
-  pass
+def load_sound():
+  try:
+    with open(SOUNDS_FILE, "r") as file:
+      return json.load(file)
+  except Exception:
+    return {}
 
-def update():
-  pass
+custom_sound = load_sound()
+
+def parse_key(key):
+  """Turn a pynput key into a JSON-safe string ('a', 'space', 'enter'...)."""
+  if isinstance(key, keyboard.KeyCode):
+      return key.char.lower() if key.char else f"vk_{key.vk}"
+  return key.name
+
 def on_press(key):
-    sound_path = custom_sounds[key]
-    try:
-      if sound_path:
+    sound_path = custom_sounds.get(key_to_str(key))
+    if sound_path:
         playsound(sound_path, block=False)
-      else:
-        playsound(normal_keys, block=False)
-        
-    except AttributeError:
-      if sound_path:
-        playsound(sound_path, block=False)
-      else:
-        playsound(special_keys, block=False)
+    elif isinstance(key, keyboard.KeyCode):
+        playsound(NORMAL_KEYS, block=False)
+    else:
+        playsound(SPECIAL_KEYS, block=False)
 
-def custom(key):
-  print(f'You pressed: {key}')
-  custom_key = key
-  return False
 
-intro = (input('keytaps active. press "S" to start and "C" to choose custom sounds: ')).lower()
+def capture_key():
+    """Wait for one keypress and return it."""
+    captured = {}
+    def on_press(key):
+        captured["key"] = key
+        return False
+
+    with keyboard.Listener(on_press=on_press) as listener:
+        listener.join()
+    return captured.get("key")
+
+def validate_path(file_path):
+  p = Path(file_path.strip().strip('"').strip("'")).expanduser()
+  return p.is_file() and p.suffix.lower() in VALID_EXTENSIONS
+
+def update(key, file_path):
+  sounds = load_sounds()
+  sounds[key_to_str(key)] = str(file_path.strip().strip('"').strip("'")).expanduser().resolve())
+
+  tmp = SOUNDS_FILE.with_suffix(".tmp")
+  with open(tmp, "w") as f:
+    json.dump(sounds, f, indent=2)
+  tmp.replace(SOUNDS_FILE)
+  return sounds
+
+intro = (input('keytaps active. press enter to continue or "C" to choose custom sounds: ')).lower()
 
 while intro == 'c' or intro=='y':
   print('''
@@ -49,15 +73,14 @@ while intro == 'c' or intro=='y':
   3. ONCE YOU'RE DONE, CLICK ON ENTER. IF YOU WANT TO CONTINUE ADDING CUSTOM SOUNDS, CLICK 'Y' IF NOT CLICK 'N' AND LET THE PROGRAM CONTINUE RUNNING.
   ''')
   time.sleep(3)
-  with keyboard.Listener(on_press=custom) as customizer:
-    print('tap on the key you want to customize')
-    customizer.join()
+  print('tap on the key you want to customize')
+  key = capture_key()
 
   file_path = input('paste the file path to your sound: ')
-  if !validate_path(file_path):
+  if not validate_path(file_path):
     print('invalid path. make sure file exists and is in the correct audio format.')
   else:
-    update()
+    custom_sounds = update(key, file_path)
     intro = input('custom sound added, do you want to add another one?(Y or N) ').lower()
 
 with keyboard.Listener(on_press=on_press) as listener:
