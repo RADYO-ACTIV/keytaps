@@ -1,6 +1,6 @@
 # ⌨️ Keytaps
 
-Keytaps is a lightweight Python desktop utility that plays a sound every time you press a key. It listens to your keyboard globally (in any window or app), plays a default click for normal keys and a heavier sound for special keys, and lets you assign your own sound to any individual key.
+Keytaps is a lightweight Python desktop app that plays a sound every time you press a key. It listens to your keyboard in any window or app, plays a default click for the keys, and lets you set your custom sounds to any individual key.
 
 ---
 
@@ -25,8 +25,8 @@ Keytaps is a lightweight Python desktop utility that plays a sound every time yo
 
 - **Global key listening:** sounds play no matter which window is focused.
 - **Default sounds:** one sound for normal keys (letters, numbers, symbols) and another for special keys (Enter, Space, Shift, and so on).
-- **Per-key custom sounds:** assign any `.wav` or `.mp3` file to any key.
-- **Persistent settings:** custom assignments are saved to `sounds.json` and loaded on every start.
+- **Per-key custom sounds:** set any `.wav` or `.mp3` file to any key.
+- **Persistent settings:** custom sounds are saved to `sounds.json` and loaded everytime the app starts.
 - **Non-blocking playback:** sounds play in the background so typing never lags behind.
 - **Startup sound:** a short sound plays when the listener becomes active.
 ---
@@ -54,7 +54,7 @@ keytaps/
 ├── README.md           # You are here
 └── sounds/             # Audio files
     ├── light.wav       # Default sound for normal keys
-    ├── strong.wav
+    ├── strong.wav      # Default sound for special keys
     ├── 7.mp3           # Startup sound
     └── dragon-studio-pop-402324.mp3
 ```
@@ -98,7 +98,7 @@ keytaps/
    pip install -r requirements.txt
    ```
 
-4. **Make sure `sounds.json` is valid.** An empty object is enough for a fresh install:
+4. **Make sure `sounds.json` is valid.** An empty object is enough for initial setup:
 
    ```json
    {}

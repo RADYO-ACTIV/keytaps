@@ -17,7 +17,7 @@ def load_sound():
   except Exception:
     return {}
 
-custom_sound = load_sound()
+custom_sounds = load_sound()
 
 def parse_key(key):
   """Turn a pynput key into a JSON-safe string ('a', 'space', 'enter'...)."""
@@ -26,7 +26,7 @@ def parse_key(key):
   return key.name
 
 def on_press(key):
-    sound_path = custom_sounds.get(key_to_str(key))
+    sound_path = custom_sounds.get(parse_key(key))
     if sound_path:
         playsound(sound_path, block=False)
     elif isinstance(key, keyboard.KeyCode):
@@ -51,8 +51,8 @@ def validate_path(file_path):
   return p.is_file() and p.suffix.lower() in VALID_EXTENSIONS
 
 def update(key, file_path):
-  sounds = load_sounds()
-  sounds[key_to_str(key)] = str(file_path.strip().strip('"').strip("'")).expanduser().resolve())
+  sounds = load_sound()
+  sounds[parse_key(key)] = str(Path(file_path.strip().strip('"').strip("'")).expanduser())
 
   tmp = SOUNDS_FILE.with_suffix(".tmp")
   with open(tmp, "w") as f:
@@ -75,7 +75,7 @@ while intro == 'c' or intro=='y':
   time.sleep(3)
   print('tap on the key you want to customize')
   key = capture_key()
-
+  time.sleep(1)
   file_path = input('paste the file path to your sound: ')
   if not validate_path(file_path):
     print('invalid path. make sure file exists and is in the correct audio format.')
