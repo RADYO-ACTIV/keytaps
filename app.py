@@ -3,12 +3,24 @@ from pynput import keyboard
 import time
 import json
 from pathlib import Path
+import sys
 
+def resource_path(relative):
+    """For bundled, read-only files (the sounds folder)."""
+    base = Path(getattr(sys, "_MEIPASS", Path(__file__).parent))
+    return base / relative
+
+def app_dir():
+    """Folder containing the exe (or app.py when running normally)."""
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).parent
+    return Path(__file__).parent
+
+SOUNDS_FILE = app_dir() / "sounds.json"
 BASE_DIR = Path(__file__).parent
-SOUNDS_FILE = BASE_DIR / "sounds.json"
 VALID_EXTENSIONS = {".wav", ".mp3"}
-NORMAL_KEYS = BASE_DIR / 'sounds/light.wav'
-SPECIAL_KEYS = BASE_DIR / 'sounds/strong.wav'
+NORMAL_KEYS = str(resource_path("sounds/light.wav"))
+SPECIAL_KEYS = str(resource_path("sounds/strong.wav"))
 
 def load_sound():
   try:
@@ -27,7 +39,7 @@ def parse_key(key):
 
 def on_press(key):
     sound_path = custom_sounds.get(parse_key(key))
-    if sound_path:
+    if sound_path.is_file() and Path(sound_path).suffix.lower() in VALID_EXTENSIONS:
         playsound(sound_path, block=False)
     elif isinstance(key, keyboard.KeyCode):
         playsound(NORMAL_KEYS, block=False)
@@ -84,6 +96,6 @@ while intro == 'c' or intro=='y':
     intro = input('custom sound added, do you want to add another one?(Y or N) ').lower()
 
 with keyboard.Listener(on_press=on_press) as listener:
-      playsound("sounds/7.mp3", block=True)
+      playsound(str(resource_path("sounds/7.mp3")), block=True)
       print("Listening for key presses. Press CTRL+C to stop.")
       listener.join()
