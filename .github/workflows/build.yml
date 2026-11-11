@@ -2,12 +2,15 @@ name: Build executables
 
 on:
   push:
-    tags: ["v*"]      # builds when you push a tag like v1.0
+    branches: [main]
+    paths-ignore:
+      - "**.md"
   workflow_dispatch:   # lets you run it manually from the Actions tab
 
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: windows-latest
