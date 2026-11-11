@@ -38,8 +38,8 @@ def parse_key(key):
   return key.name
 
 def on_press(key):
-    sound_path = custom_sounds.get(parse_key(key))
-    if sound_path.is_file() and Path(sound_path).suffix.lower() in VALID_EXTENSIONS:
+    sound_path = str(custom_sounds.get(parse_key(key)))
+    if Path(sound_path).is_file() and Path(sound_path).suffix.lower() in VALID_EXTENSIONS:
         playsound(sound_path, block=False)
     elif isinstance(key, keyboard.KeyCode):
         playsound(NORMAL_KEYS, block=False)
@@ -87,7 +87,6 @@ while intro == 'c' or intro=='y':
   time.sleep(3)
   print('tap on the key you want to customize')
   key = capture_key()
-  time.sleep(1)
   file_path = input('paste the file path to your sound: ')
   if not validate_path(file_path):
     print('invalid path. make sure file exists and is in the correct audio format.')
