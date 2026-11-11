@@ -1,0 +1,42 @@
+name: Build executables
+
+on:
+  push:
+    tags: ["v*"]      # builds when you push a tag like v1.0
+  workflow_dispatch:   # lets you run it manually from the Actions tab
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            sep: ";"
+            hidden: pynput.keyboard._win32
+          - os: macos-latest
+            sep: ":"
+            hidden: pynput.keyboard._darwin
+          - os: ubuntu-latest
+            sep: ":"
+            hidden: pynput.keyboard._xorg
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - run: pip install -r requirements.txt pyinstaller
+
+      - run: >
+          pyinstaller --onefile --name keytaps
+          --add-data "sounds${{ matrix.sep }}sounds"
+          --hidden-import ${{ matrix.hidden }}
+          app.py
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: keytaps-${{ matrix.os }}
+          path: dist/*
